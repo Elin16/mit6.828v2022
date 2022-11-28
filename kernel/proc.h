@@ -1,3 +1,5 @@
+#ifndef PROC_H
+#define PROC_H
 #include "kernel/param.h"
 #include "kernel/types.h"
 #include "kernel/defs.h"
@@ -108,3 +110,4 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
 };
+#endif
