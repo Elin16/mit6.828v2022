@@ -4,7 +4,7 @@
 #include "kernel/proc.h"
 #include "kernel/riscv.h"
 #include "kernel/spinlock.h"
-#include "kernerl/param.h"
+#include "kernel/param.h"
 
 /* Possible states of a thread: */
 #define FREE        0x0
