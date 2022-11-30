@@ -1,0 +1,1 @@
+Since the headers of linked list maintained by different threads are not updated synchronously and they use a public linked list, so the threads will effect other threads's insertion.
