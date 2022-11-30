@@ -1,10 +1,11 @@
 #include "kernel/types.h"
 #include "kernel/stat.h"
+#include "kernel/param.h"
 #include "user/user.h"
 #include "kernel/proc.h"
 #include "kernel/riscv.h"
 #include "kernel/spinlock.h"
-#include "kernel/param.h"
+
 
 /* Possible states of a thread: */
 #define FREE        0x0
