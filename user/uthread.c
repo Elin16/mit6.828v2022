@@ -2,6 +2,9 @@
 #include "kernel/stat.h"
 #include "user/user.h"
 #include "kernel/proc.h"
+#include "kernel/risv.h"
+#include "kernel/spinlock.h"
+#include "kernerl/param.h"
 
 /* Possible states of a thread: */
 #define FREE        0x0

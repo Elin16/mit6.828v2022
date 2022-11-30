@@ -1,8 +1,6 @@
 #ifndef PROC_H
 #define PROC_H
-#include "kernel/param.h"
 #include "kernel/types.h"
-#include "kernel/defs.h"
 // Saved registers for kernel context switches.
 struct context {
   uint64 ra;
