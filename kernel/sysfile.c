@@ -314,30 +314,6 @@ sys_open(void)
   argint(1, &omode);
   if((n = argstr(0, path, MAXPATH)) < 0)
     return -1;
-
-  if(!omode || !O_NOFOLLOW){
-    int i = 0;
-    for (i=0; i<10; ++i){
-      if (ip->type != T_SYMLINK){
-        break;
-      }
-      dp = namei(path);
-      if(dp == 0){
-        iunlockput(ip);
-        end_op();
-        return -1;
-      }
-      iunlockput(ip);
-      ip = dp;
-      ilock(ip);
-    }
-    if(i == 10){
-      iunlockput(ip);
-      end_op();
-      return -1;
-    }
-  }
-
   begin_op();
 
   if(omode & O_CREATE){
@@ -356,6 +332,28 @@ sys_open(void)
       iunlockput(ip);
       end_op();
       return -1;
+    }
+    if(!omode || !O_NOFOLLOW){
+      int count = 0;
+      for (count = 0; count <= 10; ++count){
+        if (count == 10){
+          iunlockput(ip);
+          end_op();
+          return -1;
+        }
+        if (ip->type != T_SYMLINK){
+          break;
+        }
+        dp = namei(path);
+        if(dp == 0){
+          iunlockput(ip);
+          end_op();
+          return -1;
+        }
+        iunlockput(ip);
+        ip = dp;
+        ilock(ip);
+      }
     }
   }
 
