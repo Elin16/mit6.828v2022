@@ -308,11 +308,35 @@ sys_open(void)
   int fd, omode;
   struct file *f;
   struct inode *ip;
+  struct inode *dp;
   int n;
 
   argint(1, &omode);
   if((n = argstr(0, path, MAXPATH)) < 0)
     return -1;
+
+  if(!omode || !O_NOFOLLOW){
+    int i = 0;
+    for (i=0; i<10; ++i){
+      if (ip->type != T_SYMLINK){
+        break;
+      }
+      dp = namei(path);
+      if(dp == 0){
+        iunlockput(ip);
+        end_op();
+        return -1;
+      }
+      iunlockput(ip);
+      ip = dp;
+      ilock(ip);
+    }
+    if(i == 10){
+      iunlockput(ip);
+      end_op();
+      return -1;
+    }
+  }
 
   begin_op();
 
@@ -501,5 +525,31 @@ sys_pipe(void)
     fileclose(wf);
     return -1;
   }
+  return 0;
+}
+
+uint64 sys_symlink(void){
+  char target[MAXPATH], path[MAXPATH];
+  struct inode *ip, *dp;
+  if( argstr(0, target, MAXPATH) < 0||
+     argstr(1, path, MAXPATH)<0){
+      return -1;
+  }
+  begin_op();
+  ip = namei(target);
+  if(ip && ip->type == T_DIR){
+    end_op();
+    return -1; 
+  }
+  dp = create(path, T_SYMLINK, 0, 0);
+  if(! dp){
+    end_op();
+    return -1; 
+  }
+  if ( writei(dp, 0, (uint64)target, 0, MAXPATH) != MAXPATH){
+    panic("symlink: writei error!");
+  }
+  iunlockput(dp);
+  end_op();
   return 0;
 }
