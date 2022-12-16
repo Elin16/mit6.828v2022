@@ -333,28 +333,25 @@ sys_open(void)
       end_op();
       return -1;
     }
-    if(!omode || !O_NOFOLLOW){
+    if(!(omode & O_NOFOLLOW)){
       int count = 0;
-      for (count = 0; count <= 10; ++count){
-        if (count == 10){
+      while(ip->type == T_SYMLINK){
+        if (count == 10 || readi(ip, 0, (uint64)path, 0, MAXPATH) == 0){
           iunlockput(ip);
           end_op();
           return -1;
         }
-        if (ip->type != T_SYMLINK){
-          break;
-        }
-        dp = namei(path);
-        if(dp == 0){
-          iunlockput(ip);
+        if( (dp = namei(path)) == 0){
+          iunlock(ip);
           end_op();
           return -1;
         }
-        iunlockput(ip);
+        iunlock(ip);
         ip = dp;
         ilock(ip);
+        count ++;
       }
-    }
+    }  
   }
 
   if(ip->type == T_DEVICE && (ip->major < 0 || ip->major >= NDEV)){
@@ -529,10 +526,10 @@ sys_pipe(void)
 uint64 sys_symlink(void){
   char target[MAXPATH], path[MAXPATH];
   struct inode *ip, *dp;
-  if( argstr(0, target, MAXPATH) < 0||
-     argstr(1, path, MAXPATH)<0){
+  if( argstr(0, target, MAXPATH) < 0|| argstr(1, path, MAXPATH)<0){
       return -1;
   }
+
   begin_op();
   ip = namei(target);
   if(ip && ip->type == T_DIR){
